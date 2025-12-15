@@ -1,54 +1,46 @@
-# The Geometry of Regularization: From L1 to L3
+## 🧠 Understanding Regularisation: A Simple Guide
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Status](https://img.shields.io/badge/Status-Portfolio_Project-green)
-![Libraries](https://img.shields.io/badge/Libraries-NumPy%20%7C%20SciPy%20%7C%20Sklearn-orange)
+When we train a machine learning model, it often tries too hard. It memorises every little detail of the data, including the noise and errors. This is called **Overfitting**.
 
-## 📖 Overview
+Regularisation is our way of telling the model: *"Don't just fit the data; keep the solution simple."*
 
-In machine learning, **Regularization** is the technique of adding a "penalty" to the model's loss function to prevent overfitting. While **L1 (Lasso)** and **L2 (Ridge)** are industry standards, the mathematical concept generalizes to any **Lp Norm**.
+We do this by adding a **Penalty**. Imagine if, for every feature the model used, it had to pay a tax. The model would naturally try to use fewer or "cheaper" features to save money.
 
-This project explores the behavior of regularization by implementing a custom **L3 Regularizer** (Cubic Penalty) from scratch and comparing it against the standard L1 and L2 methods on synthetic datasets. It visualizes the geometric constraints and the resulting coefficient paths.
+Here are the three standard ways we apply that tax:
 
-## 🧠 The Math: What is "L"?
+### 1. L1 Regularisation (Lasso)
+**The "Marie Kondo" / The Declutterer**
 
-Regularization changes the learning objective from "minimize error" to "minimize error + keep weights small."
+L1 is aggressive. It looks at your data and asks, *"Do we really need this?"* If a feature (variable) is only slightly useful, L1 decides it is not worth the cost and throws it away completely.
 
-$$J(w) = \text{MSE} + \lambda \cdot ||w||_p$$
+* **What it does:** It forces the weights of weak features to become exactly **Zero**.
+* **The Result:** You end up with a **Sparse Model**. If you start with 100 features, L1 might leave you with only the 5 most important ones and delete the rest.
+* **Best for:** When you have messy data with far too many features and you want to automatically select only the best ones.
 
-Where $||w||_p$ is the p-norm of the weight vector:
+### 2. L2 Regularisation (Ridge)
+**The "Volume Knob" / The Shrinker**
 
-$$||w||_p = \left( \sum_{i=1}^{n} |w_i|^p \right)^{1/p}$$
+L2 is gentler. It does not like to delete things. Instead, it hates it when any single feature gets too loud or powerful. It believes that many small details are better than one big, overpowering explanation.
 
-### The Three Contenders
+* **What it does:** It forces all the weights to be **Small**, but rarely zero. It "shrinks" them down so they don't dominate the model.
+* **The Result:** You keep all your features, but their influence is controlled. No single variable can ruin the prediction.
+* **Best for:** When you believe most of your features are useful, or when features are correlated (related to each other), and you just want a stable, reliable model.
 
-| Method | Norm ($p$) | Formula | Geometric Shape | Key Characteristic |
-| :--- | :--- | :--- | :--- | :--- |
-| **Lasso** | **L1** | $\sum |w|$ | **Diamond** | **Sparsity:** Forces weak features to exactly 0. Acts as Feature Selection. |
-| **Ridge** | **L2** | $\sum w^2$ | **Circle** | **Shrinkage:** Reduces all weights proportionally. Handles correlated features well. |
-| **Cubic** | **L3** | $\sum |w|^3$ | **Rounded Square** | **Outlier Suppression:** Penalizes large coefficients extremely heavily, but rarely forces them to exactly 0. |
+### 3. Elastic Net
+**The "Hybrid" / The Diplomat**
 
-### Visualizing the Geometry
-The "shape" of the regularization determines how the model settles on weights.
-* **L1 (Diamond):** The corners touch the axes, allowing coefficients to hit zero.
-* **L2 (Circle):** Smooth curvature means coefficients get close to zero but rarely touch.
-* **L3 (Super-Gaussian):** As $p$ increases, the shape expands toward a square.
+Sometimes L1 is too harsh (deleting things you need) and L2 is too lenient (keeping junk you don't need). Elastic Net is the compromise.
 
+* **What it does:** It combines both penalties. It shrinks weights like L2, but it can also set some to zero like L1.
+* **The Superpower:** It handles **Groups**. If you have two features that are almost identical (like "Height in cm" and "Height in inches"), L1 tends to pick one and delete the other randomly. Elastic Net is smart enough to keep them both but shrink them together.
+* **Best for:** When you aren't sure which one to use, or when you have correlated features that you don't want to lose.
 
+---
 
-## 🛠️ Implementation Details
+### ⚡ The Cheat Sheet
 
-### 1. Standard Methods (L1 & L2)
-Used `scikit-learn`'s optimized coordinate descent and SVD solvers for Lasso and Ridge regression.
-
-### 2. Custom L3 Implementation
-Since L3 is not standard in machine learning libraries, I implemented a custom estimator using `scipy.optimize`.
-
-**The Custom Loss Function:**
-```python
-def l3_loss(weights, X, y, alpha):
-    predictions = X @ weights
-    mse = np.mean((y - predictions) ** 2)
-    # The L3 Penalty
-    penalty = alpha * np.sum(np.abs(weights) ** 3)
-    return mse + penalty
+| Method | The Vibe | Action | Result |
+| :--- | :--- | :--- | :--- |
+| **L1 (Lasso)** | Ruthless | **Deletes** weak features. | A tiny, simple model. |
+| **L2 (Ridge)** | Strict | **Shrinks** all features. | A stable, balanced model. |
+| **Elastic Net** | Smart | **Mixes** both strategies. | The best of both worlds. |
